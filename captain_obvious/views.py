@@ -6,8 +6,8 @@ from browser import Browser
 
 br = Browser()
 
-def index(request):
-    br.open_gag(4863604)
+def index(request, gag_id='4863604'):
+    br.open_gag(int(gag_id))
     gag_img_url = br.get_image_url()
     streams = br.get_comments()
     gag_comments = []

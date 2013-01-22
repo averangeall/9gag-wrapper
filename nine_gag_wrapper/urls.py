@@ -7,6 +7,7 @@ from django.conf.urls import patterns, include, url
 urlpatterns = patterns('',
     # Examples:
     url(r'^$', 'captain_obvious.views.index'),
+    url(r'^(?P<gag_id>\d+)$', 'captain_obvious.views.index'),
     # url(r'^nine_gag_wrapper/', include('nine_gag_wrapper.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
