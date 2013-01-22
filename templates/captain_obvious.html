@@ -27,37 +27,33 @@
 
         <div class="container">
             <div class="container" style="width: 50%; margin: 0 auto 20px;">
-                <img src="http://d24w6bsrhbeh9d.cloudfront.net/photo/6368350_700b.jpg" class="img-polaroid" />
+                <img src="{{ gag_img_url }}" class="img-polaroid" />
             </div>
             <table class="table">
-                <tr>
-                    <td width="60px">
-                        <img src="https://fbcdn-profile-a.akamaihd.net/hprofile-ak-prn1/41630_100001616821682_8165_q.jpg" />
-                    </td>
-                    <td colspan="2">
-                        <p>John Lin</p>
-                        <p>Hello</p>
-                    </td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td width="60px">
-                        <img src="https://fbcdn-profile-a.akamaihd.net/hprofile-ak-ash4/371623_100000551347790_1436916040_q.jpg" />
-                    </td>
-                    <td>
-                        <p>Emil Ferent</p>
-                        <p>Yo</p>
-                    </td>
-                </tr>
-                <tr>
-                    <td width="60px">
-                        <img src="https://fbcdn-profile-a.akamaihd.net/hprofile-ak-prn1/41630_100001616821682_8165_q.jpg" />
-                    </td>
-                    <td colspan="2">
-                        <p>John Lin</p>
-                        <p>Hello again</p>
-                    </td>
-                </tr>
+                {% for comment in gag_comments %}
+                    {% if comment.is_lead %}
+                        <tr>
+                            <td width="60px">
+                                <img src="{{ comment.img_url }}" />
+                            </td>
+                            <td colspan="2">
+                                <p>{{ comment.name }}</p>
+                                <p>{{ comment.content }}</p>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td></td>
+                            <td width="60px">
+                                <img src="{{ comment.img_url }}" />
+                            </td>
+                            <td>
+                                <p>{{ comment.name }}</p>
+                                <p>{{ comment.content }}</p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
             </table>
         </div>
     </body>
