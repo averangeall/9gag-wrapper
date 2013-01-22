@@ -2,27 +2,25 @@
 
 from django.template import Context, loader
 from django.http import HttpResponse
+from browser import Browser
+
+br = Browser()
 
 def index(request):
-    t = loader.get_template('captain_obvious.html')
+    br.open_gag(4863604)
+    gag_img_url = br.get_image_url()
+    streams = br.get_comments()
     gag_comments = []
-    gag_comments.append({'is_lead': True, 
-                         'img_url': 'https://fbcdn-profile-a.akamaihd.net/hprofile-ak-prn1/41630_100001616821682_8165_q.jpg',
-                         'name': 'John Lin',
-                         'content': 'Hello',
-    })
-    gag_comments.append({'is_lead': False, 
-                         'img_url': 'https://fbcdn-profile-a.akamaihd.net/hprofile-ak-ash4/371623_100000551347790_1436916040_q.jpg',
-                         'name': 'Emil Ferent',
-                         'content': 'Yo',
-    })
-    gag_comments.append({'is_lead': True, 
-                         'img_url': 'https://fbcdn-profile-a.akamaihd.net/hprofile-ak-prn1/41630_100001616821682_8165_q.jpg',
-                         'name': 'John Lin',
-                         'content': 'Hello again',
-    })
+    for sid, stream in enumerate(streams):
+        for rid, reply in enumerate(stream):
+            gag_comments.append({'is_lead': rid == 0, 
+                                 'img_url': reply['profile_pic_url'],
+                                 'name': reply['user_name'],
+                                 'content': reply['content'],
+            })
+    t = loader.get_template('captain_obvious.html')
     c = Context({
-        'gag_img_url': 'http://d24w6bsrhbeh9d.cloudfront.net/photo/4863604_700b_v2.jpg',
+        'gag_img_url': gag_img_url,
         'gag_comments': gag_comments,
     })
     return HttpResponse(t.render(c))
