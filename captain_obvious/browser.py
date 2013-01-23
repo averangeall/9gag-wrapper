@@ -89,32 +89,30 @@ class Browser:
         image_url = 'http:' + self._soup.find('div', {'class': 'img-wrap'}).find('img')['src']
         return image_url
 
+    def get_fb_profile(self, uid):
+        profile = self._read_graph_api('https://graph.facebook.com/fql?q=SELECT+url+FROM+profile_pic+WHERE+id=%s' % uid)
+        return profile['data'][0]['url']
+
+    def get_fb_name(self, uid):
+        name = self._read_graph_api('https://graph.facebook.com/fql?q=SELECT+name+FROM+profile+WHERE+id=%s' % uid)
+        return name['data'][0]['name']
+
     def get_comments(self):
         raw_streams = self._read_graph_api('https://graph.facebook.com/comments/?ids=%s&limit=1000' % self._url)
 
         parsed_streams = []
         for raw_stream in raw_streams[self._url]['comments']['data']:
             parsed_stream = []
-            profile_pic_url = self._read_graph_api('https://graph.facebook.com/fql?q=SELECT+url+FROM+profile_pic+WHERE+id=%s' % raw_stream['from']['id'])
-            user_name = self._read_graph_api('https://graph.facebook.com/fql?q=SELECT+name+FROM+profile+WHERE+id=%s' % raw_stream['from']['id'])
-            print user_name
             parsed_stream.append({'cid': raw_stream['id'],
                                   'uid': raw_stream['from']['id'],
                                   'content': raw_stream['message'],
-                                  'profile_pic_url': profile_pic_url['data'][0]['url'],
-                                  'user_name': user_name['data'][0]['name'],
                                   'num_like': int(raw_stream['like_count'])
                                  })
             if 'comments' in raw_stream:
                 for raw_reply in raw_stream['comments']['data']:
-                    profile_pic_url = self._read_graph_api('https://graph.facebook.com/fql?q=SELECT+url+FROM+profile_pic+WHERE+id=%s' % raw_reply['from']['id'])
-                    user_name = self._read_graph_api('https://graph.facebook.com/fql?q=SELECT+name+FROM+profile+WHERE+id=%s' % raw_reply['from']['id'])
-                    print user_name
                     parsed_stream.append({'cid': raw_reply['id'],
                                           'uid': raw_reply['from']['id'],
                                           'content': raw_reply['message'],
-                                          'profile_pic_url': profile_pic_url['data'][0]['url'],
-                                          'user_name': user_name['data'][0]['name'],
                                           'num_like': -1
                                          })
             parsed_streams.append(parsed_stream)

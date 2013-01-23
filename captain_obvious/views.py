@@ -1,7 +1,10 @@
 # Create your views here.
 
-from django.template import Context, loader
+import json
 from django.http import HttpResponse
+from django.template import Context, loader
+from django.core.context_processors import csrf
+from django.shortcuts import render_to_response
 from browser import Browser
 
 br = Browser()
@@ -14,13 +17,18 @@ def index(request, gag_id='4863604'):
     for sid, stream in enumerate(streams):
         for rid, reply in enumerate(stream):
             gag_comments.append({'is_lead': rid == 0, 
-                                 'img_url': reply['profile_pic_url'],
-                                 'name': reply['user_name'],
+                                 'uid': reply['uid'],
                                  'content': reply['content'],
             })
-    t = loader.get_template('captain_obvious.html')
-    c = Context({
+    resp_dict = {
         'gag_img_url': gag_img_url,
         'gag_comments': gag_comments,
-    })
-    return HttpResponse(t.render(c))
+    }
+    return render_to_response('captain_obvious.html', resp_dict)
+
+def graph_comment(request):
+    uid = request.GET.get('uid', False)
+    profile = br.get_fb_profile(uid)
+    name = br.get_fb_name(uid)
+    return HttpResponse(json.dumps({'uid': uid, 'profile': profile, 'name': name}))
+

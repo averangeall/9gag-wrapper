@@ -8,6 +8,7 @@ urlpatterns = patterns('',
     # Examples:
     url(r'^$', 'captain_obvious.views.index'),
     url(r'^(?P<gag_id>\d+)$', 'captain_obvious.views.index'),
+    url(r'^graph/comment/$', 'captain_obvious.views.graph_comment'),
     # url(r'^nine_gag_wrapper/', include('nine_gag_wrapper.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
