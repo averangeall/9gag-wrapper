@@ -7,7 +7,8 @@ from django.conf.urls import patterns, include, url
 urlpatterns = patterns('',
     # Examples:
     url(r'^$', 'captain_obvious.views.index'),
-    url(r'^(?P<gag_id>\d+)$', 'captain_obvious.views.index'),
+    url(r'^gag/(?P<gag_id>\d+)$', 'captain_obvious.views.index'),
+    url(r'^mc/$', 'captain_obvious.views.meme_class'),
     url(r'^graph/comment/$', 'captain_obvious.views.graph_comment'),
     # url(r'^nine_gag_wrapper/', include('nine_gag_wrapper.foo.urls')),
 

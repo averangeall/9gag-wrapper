@@ -46,6 +46,17 @@ class Browser:
         content = page.read()
         return json.loads(content)
 
+    def _reverse_html_escape(self, string):
+        pairs = [('&', '&amp;'),
+                 ('<', '&lt;'),
+                 ('>', '&gt;'),
+                 ('"', '&quot;'),
+                 ("'", '&#0*39;'),
+        ]
+        for pair in pairs:
+            string = re.sub(pair[1], pair[0], string)
+        return string
+
     def open_gag(self, gid):
         self._url = 'http://9gag.com/gag/%d' % gid
         try:
@@ -74,16 +85,11 @@ class Browser:
 
         return Browser.OKAY
 
-    def get_info_pad(self):
+    def get_title(self):
         info_pad = self._soup.find('div', {'class': 'post-info-pad'})
         title = info_pad.find('h1').string
         title = unicode(title)
-        uploader = info_pad.find('p').find('a').string
-        num_comments = info_pad.find('span', {'class': 'comment'}).string
-        num_loved = info_pad.find('span', {'class': 'loved'}).find('span').string
-        if num_loved == '&bull;':
-            num_loved = 0
-        return title, uploader.rstrip(), int(num_comments), int(num_loved)
+        return self._reverse_html_escape(title)
 
     def get_image_url(self):
         image_url = 'http:' + self._soup.find('div', {'class': 'img-wrap'}).find('img')['src']

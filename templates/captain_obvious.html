@@ -8,9 +8,10 @@
         <script src="http://code.jquery.com/jquery-latest.js"></script>
         <script src="/static/js/bootstrap.min.js"></script>
         <script>
-            $(function() {
+            var uids = new Array();
+
+            function collect_uids() {
                 var comments = $("[class^=comment_]");
-                var uids = new Array();
                 for(var idx in comments) {
                     var comment = $(comments[idx]);
                     var class_name = comment.attr('class');
@@ -21,12 +22,35 @@
                     if($.inArray(uid, uids) == -1)
                         uids.push(uid);
                 }
+            }
+
+            function fill_uids() {
                 for(var idx in uids) {
                     $.get('/graph/comment', {uid: uids[idx]}, function(res) {
                         $('.profile_' + res.uid).attr('src', res.profile);
                         $('.name_' + res.uid).html(res.name);
                     }, 'json');
                 }
+            }
+
+            function find_meme_class() {
+                $.get('/mc', {gag_id: $('#gag_id').val()}, function(res) {
+                    if(res.meme_class == null)
+                        $('.meme-class').html('not a meme : (');
+                    else {
+                        var meme_link = $('<a></a>');
+                        meme_link.html(res.meme_class);
+                        meme_link.attr('href', 'https://www.google.com.tw/search?q=meme+' + res.meme_class + '&oq=hehe&aqs=chrome.0.57j62.922&sugexp=chrome,mod=14&sourceid=chrome&ie=UTF-8');
+                        meme_link.attr('target', '_blank');
+                        $('.meme-class').html(meme_link);
+                    }
+                }, 'json');
+            }
+
+            $(function() {
+                find_meme_class();
+                collect_uids();
+                fill_uids();
             });
         </script>
         <style type="text/css">
@@ -37,6 +61,7 @@
         </style>
     </head>
     <body>
+        <input type="hidden" id="gag_id" value="{{ gag_id }}" />
         <div class="navbar navbar-inverse navbar-fixed-top">
           <div class="navbar-inner">
             <div class="container">
@@ -48,7 +73,12 @@
         </div>
 
         <div class="container">
-            <h2>{{ gag_img_title }}</h2>
+            <div>
+                <h2>{{ gag_img_title }}</h2>
+            </div>
+            <div align="right">
+                <h3 class="meme-class">determine meme...</h3>
+            </div>
             <div class="container" style="width: 50%; margin: 0 auto 20px;">
                 <img src="{{ gag_img_url }}" class="img-polaroid" />
             </div>
