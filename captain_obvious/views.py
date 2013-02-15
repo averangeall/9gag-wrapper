@@ -16,7 +16,7 @@ mc = MemeClassifier('static/meme-templates')
 gag_img_urls = {}
 
 def index(request, gag_id='6400621'):
-    return render_to_response('captain_obvious.html', {'gag_id': gag_id})
+    return render_to_response('captain-obvious.html', {'gag_id': gag_id})
 
 def nine_gag_post(request):
     gag_id = request.GET.get('gag_id', False)
