@@ -10,47 +10,84 @@
         <script>
             var uids = new Array();
 
-            function collect_uids() {
-                var comments = $("[class^=comment_]");
+            function collectUids() {
+                var comments = $("[class^=comment-]");
                 for(var idx in comments) {
-                    var comment = $(comments[idx]);
-                    var class_name = comment.attr('class');
-                    if(class_name == undefined) // weird
+                    if(isNaN(parseInt(idx)))
                         continue;
-                    var tokens = class_name.split('_');
+                    var comment = $(comments[idx]);
+                    var className = comment.attr('class');
+                    var tokens = className.split('-');
                     var uid = tokens[1];
                     if($.inArray(uid, uids) == -1)
                         uids.push(uid);
                 }
             }
 
-            function fill_uids() {
+            function fillUids() {
                 for(var idx in uids) {
-                    $.get('/graph/comment', {uid: uids[idx]}, function(res) {
-                        $('.profile_' + res.uid).attr('src', res.profile);
-                        $('.name_' + res.uid).html(res.name);
+                    $.get('/graph/user', {uid: uids[idx]}, function(res) {
+                        $('.profile-' + res.uid).attr('src', res.profile);
+                        $('.name-' + res.uid).html(res.name);
                     }, 'json');
                 }
             }
 
-            function find_meme_class() {
-                $.get('/mc', {gag_id: $('#gag_id').val()}, function(res) {
+            function makeGoogleLink(keywords) {
+                return 'https://www.google.com.tw/search?q=meme+' + keywords + '&oq=hehe&aqs=chrome.0.57j62.922&sugexp=chrome,mod=14&sourceid=chrome&ie=UTF-8';
+            }
+
+            function findMemeClass() {
+                $.get('/mc', {gag_id: $('#gag-id').val()}, function(res) {
                     if(res.meme_class == null)
                         $('.meme-class').html('not a meme : (');
                     else {
-                        var meme_link = $('<a></a>');
-                        meme_link.html(res.meme_class);
-                        meme_link.attr('href', 'https://www.google.com.tw/search?q=meme+' + res.meme_class + '&oq=hehe&aqs=chrome.0.57j62.922&sugexp=chrome,mod=14&sourceid=chrome&ie=UTF-8');
-                        meme_link.attr('target', '_blank');
-                        $('.meme-class').html(meme_link);
+                        var memeLink = $('<a></a>');
+                        memeLink.html(res.meme_class);
+                        memeLink.attr('href', makeGoogleLink(res.meme_class));
+                        memeLink.attr('target', '_blank');
+                        $('.meme-class').html(memeLink);
                     }
                 }, 'json');
             }
 
+            function fillGag() {
+                $.get('/9gag/post', {gag_id: $('#gag-id').val()}, function(res) {
+                    $('#gag-title').html(res.gag_title);
+                    $('#gag-img').attr('src', res.gag_img_url);
+                    $('#gag-img').attr('class', 'img-polaroid');
+                }, 'json');
+            }
+
+            function fillComments() {
+                $.get('/graph/comments', {gag_id: $('#gag-id').val()}, function(res) {
+                    var table = $('#gag-comments');
+                    for(var idx in res.comments) {
+                        var comment = res.comments[idx];
+                        var tr = $('<tr></tr>');
+                        tr.attr('class', 'comment-' + comment.uid);
+                        var imgProfile = $('<img></img>').attr('src', '/static/img/yao-ming.jpg')
+                                                         .attr('class', 'profile-' + comment.uid);
+                        var tdProfile = $('<td></td>').attr('width', '60').append(imgProfile);
+                        var tdContent = $('<td></td>').append($('<p></p>').attr('class', 'name-' + comment.uid).html('Somebody'))
+                                                      .append($('<p></p>').html(comment.content));
+                        if(comment.is_lead)
+                            tdContent.attr('colspan', '2');
+                        else
+                            tr.append($('<td></td>'));
+                        tr.append(tdProfile);
+                        tr.append(tdContent);
+                        table.append(tr);
+                    }
+                    collectUids();
+                    fillUids();
+                }, 'json');
+            }
+
             $(function() {
-                find_meme_class();
-                collect_uids();
-                fill_uids();
+                findMemeClass();
+                fillGag();
+                fillComments();
             });
         </script>
         <style type="text/css">
@@ -61,7 +98,7 @@
         </style>
     </head>
     <body>
-        <input type="hidden" id="gag_id" value="{{ gag_id }}" />
+        <input type="hidden" id="gag-id" value="{{ gag_id }}" />
         <div class="navbar navbar-inverse navbar-fixed-top">
           <div class="navbar-inner">
             <div class="container">
@@ -74,34 +111,15 @@
 
         <div class="container">
             <div>
-                <h2>{{ gag_img_title }}</h2>
+                <h2 id="gag-title">Loading...</h2>
             </div>
             <div align="right">
-                <h3 class="meme-class">determine meme...</h3>
+                <h3 class="meme-class"><font color="#FFFFFF">determine meme...</font></h3>
             </div>
             <div class="container" style="width: 50%; margin: 0 auto 20px;">
-                <img src="{{ gag_img_url }}" class="img-polaroid" />
+                <img id="gag-img" />
             </div>
-            <table class="table">
-                {% for comment in gag_comments %}
-                    <tr class="comment_{{ comment.uid }}">
-                        {% if not comment.is_lead %}
-                            <td></td>
-                        {% endif %}
-                        <td width="60px">
-                            <img src="/static/img/yao-ming.jpg" class="profile_{{ comment.uid }}" />
-                        </td>
-                        {% if not comment.is_lead %}
-                            <td>
-                        {% else %}
-                            <td colspan="2">
-                        {% endif %}
-                            <p class="name_{{ comment.uid }}">Somebody</p>
-                            <p>{{ comment.content }}</p>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </table>
+            <table id="gag-comments" class="table"></table>
         </div>
     </body>
 </html>

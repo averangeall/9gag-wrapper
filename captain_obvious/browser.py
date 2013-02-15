@@ -18,6 +18,7 @@ class Browser:
         self._br = mechanize.Browser()
         self._set_cookie_jar()
         self._set_options()
+        self._cur_gag = -1
 
     def _set_cookie_jar(self):
         cj = cookielib.LWPCookieJar()
@@ -58,9 +59,13 @@ class Browser:
         return string
 
     def open_gag(self, gid):
+        if self._cur_gag == gid:
+            return
+
         self._url = 'http://9gag.com/gag/%d' % gid
         try:
             page = self._br.open(self._url)
+            self._cur_gag = gid
         except KeyboardInterrupt:
             raise 
         except:
