@@ -24,7 +24,7 @@ function fillUids() {
 }
 
 function makeGoogleLink(keywords) {
-    return 'https://www.google.com.tw/search?q=meme+' + keywords + '&oq=hehe&aqs=chrome.0.57j62.922&sugexp=chrome,mod=14&sourceid=chrome&ie=UTF-8';
+    return 'https://www.google.com.tw/search?hl=zh-TW&safe=off&biw=1366&bih=682&site=imghp&tbm=isch&source=hp&biw=1366&bih=682&q=' + keywords + '&oq=meme+i+dont+always&gs_l=img.3...3278.3278.0.3809.1.1.0.0.0.0.76.76.1.1.0...0.0...1ac..4.img.q58sBgJwKbo';
 }
 
 function findMemeClass() {
