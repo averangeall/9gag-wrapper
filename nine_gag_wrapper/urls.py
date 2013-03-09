@@ -12,6 +12,9 @@ urlpatterns = patterns('',
     url(r'^9gag/post/$', 'captain_obvious.views.nine_gag_post'),
     url(r'^graph/comments/$', 'captain_obvious.views.graph_comments'),
     url(r'^graph/user/$', 'captain_obvious.views.graph_user'),
+
+    url(r'^lookup/recomm/(?P<gag_id>\d+)$', 'crowd_lookup.views.get_recomm_words'),
+    url(r'^lookup/query/$', 'crowd_lookup.views.query_word'),
     # url(r'^nine_gag_wrapper/', include('nine_gag_wrapper.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
