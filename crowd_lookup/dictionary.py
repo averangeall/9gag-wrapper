@@ -1,50 +1,74 @@
-from browser import Browser
+import browser
 from builtin import explain
+import models
 
 class NineDict:
     def __init__(self):
-        _br = Browser()
+        self._dr_eye = browser.DrEye()
+        self._google_image = browser.GoogleImage()
 
     def get_recomm(self, gag_id):
         gag_id = int(gag_id)
-        if gag_id not in explain:
-            words = []
-        else:
-            words = [x['keyword'] for x in explain[gag_id]]
+        recomms = models.Recomm.objects.filter(gag_id=gag_id)
+        words = [recomm.word.content for recomm in recomms]
         return words
 
-    def get_defis(self, word, gag_id):
+    def get_defis(self, text, gag_id):
         defis = []
-        defis += self._get_defis_in_gag(word, gag_id)
+        defis += self._get_defis_in_gag(text, gag_id)
         if len(defis) == 0:
-            defis += self._get_defis_in_general(word, gag_id)
+            defis += self._get_defis_in_general(text, gag_id)
         if len(defis) == 0:
-            defis += self._get_defis_from_web(word, gag_id)
+            defis += self._get_defis_from_web(text, gag_id)
         return defis
 
-    def _get_defis_in_gag(self, word, gag_id):
-        defis = []
-        if gag_id not in explain:
-            return defis
-        for keyword in filter(lambda x: x['keyword'].lower() == word.lower(), explain[gag_id]):
-            defis += keyword['explain']
-        return defis
+    def _get_word(self, text):
+        words = models.Word.objects.filter(content=text)
+        if len(words) == 0:
+            new = models.Word(content=text)
+            new.save()
+            return new
+        else:
+            assert len(words) == 1
+            return words[0]
 
-    def _get_defis_in_general(self, word, gag_id):
-        defis = []
-        for gid in explain:
-            for keyword in filter(lambda x: x['keyword'].lower() == word.lower(), explain[gid]):
-                defis += keyword['explain']
-        return defis
-
-    def _get_defis_from_web(self, word, gag_id):
-        defis = []
-        defis += _get_defis_from_dr_eye(word)
-        defis += _get_defis_from_google_image(word)
-        return defis
-
-    def _get_defis_from_dr_eye(self, word):
+    def _get_defis_in_gag(self, text, gag_id):
         return []
 
-    def _get_defis_from_google_image(self, word):
-        return []
+    def _get_defis_in_general(self, text, gag_id):
+        word = self._get_word(text)
+        expls = models.Explain.objects.filter(word=word)
+        return [expl.to_dict() for expl in expls]
+
+    def _get_defis_from_web(self, text, gag_id):
+        defis = []
+        defis += self._get_defis_from_dr_eye(text)
+        print defis
+        defis += self._get_defis_from_google_image(text)
+        print defis
+        return defis
+
+    def _get_defis_from_dr_eye(self, text):
+        url, defis = self._dr_eye.query(text)
+        word = self._get_word(text)
+        expls = [models.Explain(word=word, 
+                                repr_type=models.Explain.REPR_TEXT, 
+                                content=defi, 
+                                source='Dr. Eye', 
+                                link=url) for defi in defis]
+        for expl in expls:
+            expl.save()
+        return [expl.to_dict() for expl in expls[:2]]
+
+    def _get_defis_from_google_image(self, text):
+        url, defis = self._google_image.query(text)
+        word = self._get_word(text)
+        expls = [models.Explain(word=word, 
+                                repr_type=models.Explain.REPR_IMAGE, 
+                                content=defi, 
+                                source='Google Image', 
+                                link=url) for defi in defis]
+        for expl in expls:
+            expl.save()
+        return [expl.to_dict() for expl in expls[:2]]
+

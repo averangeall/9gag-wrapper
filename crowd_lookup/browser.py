@@ -6,7 +6,7 @@ import mechanize
 import cookielib
 from BeautifulSoup import BeautifulSoup
 
-class Browser:
+class BaseBrowser:
     def __init__(self):
         self._br = mechanize.Browser()
         self._set_cookie_jar()
@@ -42,24 +42,49 @@ class Browser:
                 src = src[pos + len('</script>') :]
         return dst
 
-    def query_dict(self, word):
-        word = word.lower()
-        return '配備, 裝備'
-        #self._url = 'http://dict.dreye.com/ews/dict.php?w=%s&hidden_codepage=01&ua=dc_cont&project=nd' % word
-        #page = self._br.open(self._url)
-        #content = page.read()
-        #content = re.sub('/ >', '/>', content) # workaround for strange BeautifulSoup...
-        #content = self._remove_script_tag(content)
-        #self._soup = BeautifulSoup(content)
-        #try:
-        #    defi = self._soup.find('div', {'id': 'infotab1'}) \
-        #                     .find('div', {'class': 'dict_cont'})
-        #    defi = ' '.join([str(ins) for ins in defi])
-        #except:
-        #    raise
-        #return defi
+    def _get_page_soup(self, url):
+        page = self._br.open(url)
+        content = page.read()
+        content = re.sub('/ >', '/>', content) # workaround for strange BeautifulSoup...
+        content = re.sub(r'onclick=[^"\s]+', '', content) # workaround for Google Image...
+        content = self._remove_script_tag(content)
+        soup = BeautifulSoup(content)
+        return soup
+
+class DrEye(BaseBrowser):
+    def query(self, word):
+        url = 'http://dict.dreye.com/ews/%s--01--.html' % word.lower()
+        soup = self._get_page_soup(url)
+        res = []
+        try:
+            defis = soup.find('div', {'id': 'infotab1'}) \
+                             .find('div', {'class': 'dict_cont'})
+            for defi in defis:
+                if 'attrs' in dir(defi) and dict(defi.attrs)[u'class'] == 'default':
+                    for content in defi.contents:
+                        content = unicode(content)
+                        if re.sub('\s', '', content) != '<br/>':
+                            content = content.strip()
+                            content = re.sub(r'\d+\.\s*', '', content)
+                            res.append(content)
+        except:
+            raise
+        return url, res
+
+class GoogleImage(BaseBrowser):
+    def query(self, word):
+        url = 'https://www.google.com.tw/search?um=1&hl=zh-TW&biw=1366&bih=682&tbm=isch&q=%s&oq=%s' % (word.lower(), word.lower())
+        soup = self._get_page_soup(url)
+        res = []
+        try:
+            content = str(soup)
+            res += re.findall(r'imgurl=(.+?)&amp', content)
+        except:
+            raise
+        return url, res
 
 if __name__ == '__main__':
-    br = Browser()
-    print br.query_dict('cool')
+    br = GoogleImage()
+    for a in br.query('hello'):
+        print a
 
