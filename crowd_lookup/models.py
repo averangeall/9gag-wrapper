@@ -6,6 +6,7 @@ class Word(models.Model):
 class Recomm(models.Model):
     gag_id = models.IntegerField()
     word = models.ForeignKey(Word)
+    score = models.FloatField()
 
 class Explain(models.Model):
     REPR_TEXT = 'TE'

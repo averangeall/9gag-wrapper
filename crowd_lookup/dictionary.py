@@ -1,5 +1,4 @@
 import browser
-from builtin import explain
 import models
 
 class NineDict:
@@ -37,15 +36,13 @@ class NineDict:
 
     def _get_defis_in_general(self, text, gag_id):
         word = self._get_word(text)
-        expls = models.Explain.objects.filter(word=word)
-        return [expl.to_dict() for expl in expls]
+        expls = models.Explain.objects.filter(word=word).order_by('-score')
+        return [expl.to_dict() for expl in expls[:5]]
 
     def _get_defis_from_web(self, text, gag_id):
         defis = []
         defis += self._get_defis_from_dr_eye(text)
-        print defis
         defis += self._get_defis_from_google_image(text)
-        print defis
         return defis
 
     def _get_defis_from_dr_eye(self, text):
