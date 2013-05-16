@@ -1,5 +1,4 @@
 import browser
-from builtin import explain
 import models
 
 class NineDict:
@@ -15,9 +14,7 @@ class NineDict:
 
     def get_defis(self, text, gag_id):
         defis = []
-        defis += self._get_defis_in_gag(text, gag_id)
-        if len(defis) == 0:
-            defis += self._get_defis_in_general(text, gag_id)
+        defis += self._get_defis_in_database(text, gag_id)
         if len(defis) == 0:
             defis += self._get_defis_from_web(text, gag_id)
         return defis
@@ -32,20 +29,15 @@ class NineDict:
             assert len(words) == 1
             return words[0]
 
-    def _get_defis_in_gag(self, text, gag_id):
-        return []
-
-    def _get_defis_in_general(self, text, gag_id):
+    def _get_defis_in_database(self, text, gag_id):
         word = self._get_word(text)
         expls = models.Explain.objects.filter(word=word)
-        return [expl.to_dict() for expl in expls]
+        return [expl.to_dict() for expl in expls[:5]]
 
     def _get_defis_from_web(self, text, gag_id):
         defis = []
         defis += self._get_defis_from_dr_eye(text)
-        print defis
         defis += self._get_defis_from_google_image(text)
-        print defis
         return defis
 
     def _get_defis_from_dr_eye(self, text):
